@@ -23,20 +23,19 @@ const Contact = () => {
     try {
       const response = await fetch("/api/send-email", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          message: formData.message,
-        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
       });
 
-      if (!response.ok) throw new Error("Eroare la trimiterea mesajului");
+      if (!response.ok) {
+        throw new Error("Eroare la trimiterea mesajului");
+      }
 
-      toast.success("Mesaj trimis cu succes! Te vom contacta în curând.");
+      toast.success("Mesaj trimis cu succes! Verifică-ți emailul pentru confirmare.");
       setFormData({ name: "", email: "", message: "" });
     } catch (error) {
-      console.error(error);
       toast.error("A apărut o eroare. Te rugăm să încerci din nou.");
     } finally {
       setLoading(false);
@@ -59,7 +58,8 @@ const Contact = () => {
       <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
-            {/* Formular Contact */}
+            
+            {/* FORMULARUL */}
             <div>
               <h2 className="text-3xl font-bold mb-6">Trimite-ne un mesaj</h2>
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -115,7 +115,7 @@ const Contact = () => {
               </form>
             </div>
 
-            {/* Informații Contact */}
+            {/* INFO CONTACT */}
             <div className="space-y-8">
               <div>
                 <h2 className="text-3xl font-bold mb-6">Informații Contact</h2>
@@ -140,10 +140,8 @@ const Contact = () => {
                     <div>
                       <h3 className="font-semibold mb-1">Program</h3>
                       <p className="text-muted-foreground">
-                        Luni - Vineri: 10:00 - 18:00
-                        <br />
-                        Sâmbătă: 10:00 - 14:00
-                        <br />
+                        Luni - Vineri: 10:00 - 18:00<br />
+                        Sâmbătă: 10:00 - 14:00<br />
                         Duminică: Închis
                       </p>
                     </div>
@@ -152,11 +150,9 @@ const Contact = () => {
               </div>
 
               <div className="bg-muted/30 p-6 rounded-lg">
-                <h3 className="font-semibold text-lg mb-3">
-                  Timp de răspuns
-                </h3>
+                <h3 className="font-semibold text-lg mb-3">Timp de răspuns</h3>
                 <p className="text-muted-foreground">
-                  De obicei răspundem în maxim 24 de ore în zilele lucrătoare.
+                  De obicei răspundem în maxim 24 de ore în zilele lucrătoare. 
                   Pentru urgențe, te rugăm să ne contactezi telefonic.
                 </p>
               </div>
