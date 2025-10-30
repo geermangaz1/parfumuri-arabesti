@@ -25,16 +25,19 @@ const ProductCard = ({ id, name, description, price, image_url, category }: Prod
   return (
     <Link to={`/product/${id}`}>
       <Card className="card-elegant h-full overflow-hidden group cursor-pointer">
-        <div className="aspect-square overflow-hidden relative">
+        {/* Imaginea produsului — complet vizibilă */}
+        <div className="aspect-square overflow-hidden relative flex items-center justify-center bg-white">
           <img
             src={image_url || "/placeholder.svg"}
             alt={name}
-            className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
+            className="object-contain w-full h-full p-4 transition-transform duration-500 group-hover:scale-105"
           />
           <div className="absolute top-2 right-2 bg-accent text-accent-foreground px-3 py-1 rounded-full text-xs font-semibold">
             {category}
           </div>
         </div>
+
+        {/* Detalii produs */}
         <CardContent className="p-6">
           <h3 className="text-xl font-bold mb-2 text-foreground group-hover:text-primary transition-colors">
             {name}
@@ -46,6 +49,8 @@ const ProductCard = ({ id, name, description, price, image_url, category }: Prod
             <span className="text-2xl font-bold text-primary">{price} RON</span>
           </div>
         </CardContent>
+
+        {/* Buton "Adaugă în coș" */}
         <CardFooter className="p-6 pt-0">
           <Button 
             onClick={handleAddToCart} 
