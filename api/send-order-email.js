@@ -1,34 +1,41 @@
+// api/send-order-email.js
 import Brevo from "@getbrevo/brevo";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ message: "Method not allowed" });
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { name, email, message } = req.body;
-
-  const brevo = new Brevo.TransactionalEmailsApi();
-  brevo.setApiKey(
-    Brevo.TransactionalEmailsApiApiKeys.apiKey,
-    process.env.BREVO_API_KEY
-  );
+  const { name, email, orderNumber, total } = req.body;
+  if (!name || !email || !orderNumber || !total) {
+    return res.status(400).json({ error: "Missing fields" });
+  }
 
   try {
-    await brevo.sendTransacEmail({
-      sender: { email: "noreply@parfumuriarabesti.ro", name: "Parfumuri Arabesti" },
-      to: [{ email }],
-      subject: "Comanda ta a fost primită!",
-      htmlContent: `
-        <h2>Bună, ${name}!</h2>
-        <p>Am primit comanda ta și o procesăm acum.</p>
-        <p>Detalii: ${message}</p>
-        <p>Mulțumim pentru încredere 💛</p>
-      `,
-    });
+    const apiInstance = new Brevo.TransactionalEmailsApi();
+    apiInstance.setApiKey(
+      Brevo.TransactionalEmailsApiApiKeys.apiKey,
+      process.env.BREVO_API_KEY
+    );
 
-    return res.status(200).json({ message: "Email trimis cu succes!" });
+    const sendSmtpEmail = {
+      sender: { name: "Oriental Essence", email: "orientalessence.shop@gmail.com" },
+      to: [{ email }],
+      subject: `Comanda ta #${orderNumber} a fost primită!`,
+      htmlContent: `
+        <h2>Mulțumim pentru comanda ta, ${name}!</h2>
+        <p>Număr comandă: <strong>${orderNumber}</strong></p>
+        <p>Total: <strong>${total}</strong></p>
+        <p>Te vom contacta în curând pentru confirmare.</p>
+        <br/>
+        <p>Cu drag,<br>Oriental Essence</p>
+      `,
+    };
+
+    await apiInstance.sendTransacEmail(sendSmtpEmail);
+    res.status(200).json({ success: true, message: "Email trimis cu succes!" });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Eroare la trimiterea emailului" });
+    console.error("Brevo error:", error);
+    res.status(500).json({ error: "Eroare la trimiterea emailului" });
   }
 }
