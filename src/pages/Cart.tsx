@@ -64,17 +64,23 @@ const Cart = () => {
           <h1 className="text-4xl font-bold mb-8">Coșul Tău</h1>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Lista de produse */}
             <div className="lg:col-span-2 space-y-4">
               {cart.items.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-card border border-border rounded-lg p-6 flex gap-6"
+                  className="bg-card border border-border rounded-lg p-6 flex gap-6 items-center"
                 >
-                  <img
-                    src={item.image_url || "/placeholder.svg"}
-                    alt={item.name}
-                    className="w-24 h-24 object-cover rounded-lg"
-                  />
+                  {/* Imaginea produsului */}
+                  <div className="w-28 h-28 bg-white border rounded-lg flex items-center justify-center overflow-hidden">
+                    <img
+                      src={item.image_url || "/placeholder.svg"}
+                      alt={item.name}
+                      className="object-contain w-full h-full p-2"
+                    />
+                  </div>
+
+                  {/* Detalii produs */}
                   <div className="flex-1">
                     <h3 className="font-semibold text-lg mb-2">{item.name}</h3>
                     <p className="text-primary font-bold mb-4">{item.price} RON</p>
@@ -105,13 +111,18 @@ const Cart = () => {
                       </Button>
                     </div>
                   </div>
+
+                  {/* Total produs */}
                   <div className="text-right">
-                    <p className="font-bold text-lg">{(item.price * item.quantity).toFixed(2)} RON</p>
+                    <p className="font-bold text-lg">
+                      {(item.price * item.quantity).toFixed(2)} RON
+                    </p>
                   </div>
                 </div>
               ))}
             </div>
 
+            {/* Sumar comanda */}
             <div className="lg:col-span-1">
               <div className="bg-card border border-border rounded-lg p-6 sticky top-24">
                 <h2 className="text-2xl font-bold mb-6">Sumar Comandă</h2>
