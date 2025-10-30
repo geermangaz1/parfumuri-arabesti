@@ -14,6 +14,11 @@ import ProductCard from "@/components/ProductCard";
 import { supabase } from "@/integrations/supabase/client";
 
 const Catalog = () => {
+  // 🔹 Forțăm pagina să înceapă de sus de fiecare dată când se încarcă
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const [products, setProducts] = useState<any[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
