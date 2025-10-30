@@ -7,6 +7,8 @@ import Footer from "@/components/Footer";
 import { getCart, updateQuantity, removeFromCart } from "@/lib/cart";
 import { Cart as CartType } from "@/types/cart";
 
+const SHIPPING_COST = 25; // cost fix livrare
+
 const Cart = () => {
   const [cart, setCart] = useState<CartType>({ items: [], total: 0 });
   const navigate = useNavigate();
@@ -23,13 +25,13 @@ const Cart = () => {
   const handleUpdateQuantity = (productId: string, newQuantity: number) => {
     updateQuantity(productId, newQuantity);
     loadCart();
-    window.dispatchEvent(new Event('cartUpdated'));
+    window.dispatchEvent(new Event("cartUpdated"));
   };
 
   const handleRemove = (productId: string) => {
     removeFromCart(productId);
     loadCart();
-    window.dispatchEvent(new Event('cartUpdated'));
+    window.dispatchEvent(new Event("cartUpdated"));
   };
 
   if (cart.items.length === 0) {
@@ -55,6 +57,9 @@ const Cart = () => {
     );
   }
 
+  // total final = subtotal + transport
+  const totalWithShipping = cart.total + SHIPPING_COST;
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -71,7 +76,7 @@ const Cart = () => {
                   key={item.id}
                   className="bg-card border border-border rounded-lg p-6 flex gap-6 items-center"
                 >
-                  {/* Imaginea produsului */}
+                  {/* Imagine produs */}
                   <div className="w-28 h-28 bg-white border rounded-lg flex items-center justify-center overflow-hidden">
                     <img
                       src={item.image_url || "/placeholder.svg"}
@@ -80,7 +85,7 @@ const Cart = () => {
                     />
                   </div>
 
-                  {/* Detalii produs */}
+                  {/* Detalii */}
                   <div className="flex-1">
                     <h3 className="font-semibold text-lg mb-2">{item.name}</h3>
                     <p className="text-primary font-bold mb-4">{item.price} RON</p>
@@ -131,17 +136,20 @@ const Cart = () => {
                     <span className="text-muted-foreground">Subtotal</span>
                     <span className="font-semibold">{cart.total.toFixed(2)} RON</span>
                   </div>
+
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Livrare</span>
-                    <span className="font-semibold">GRATUIT</span>
+                    <span className="text-muted-foreground">Transport</span>
+                    <span className="font-semibold">{SHIPPING_COST.toFixed(2)} RON</span>
                   </div>
+
                   <div className="border-t border-border pt-4">
                     <div className="flex justify-between text-lg">
                       <span className="font-bold">Total</span>
-                      <span className="font-bold text-primary">{cart.total.toFixed(2)} RON</span>
+                      <span className="font-bold text-primary">{totalWithShipping.toFixed(2)} RON</span>
                     </div>
                   </div>
                 </div>
+
                 <Button
                   onClick={() => navigate("/checkout")}
                   size="lg"
