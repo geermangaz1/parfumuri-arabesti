@@ -43,7 +43,7 @@ const Product = () => {
       image_url: product.image_url,
     });
     toast.success(`${product.name} adăugat în coș!`);
-    window.dispatchEvent(new Event('cartUpdated'));
+    window.dispatchEvent(new Event("cartUpdated"));
   };
 
   if (loading) {
@@ -75,7 +75,7 @@ const Product = () => {
     );
   }
 
-  const notes = product.notes ? product.notes.split('\n') : [];
+  const notes = product.notes ? product.notes.split("\n") : [];
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -91,11 +91,12 @@ const Product = () => {
           </Link>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div className="aspect-square rounded-2xl overflow-hidden shadow-[var(--shadow-elegant)]">
+            {/* Imagine produs modificată */}
+            <div className="flex items-center justify-center bg-white rounded-2xl shadow-[var(--shadow-elegant)] p-6">
               <img
                 src={product.image_url || "/placeholder.svg"}
                 alt={product.name}
-                className="w-full h-full object-cover"
+                className="max-h-[450px] w-auto object-contain transition-transform duration-300 hover:scale-105"
               />
             </div>
 
@@ -132,7 +133,9 @@ const Product = () => {
 
               <div className="border-t border-b border-border py-6">
                 <div className="flex items-baseline space-x-2">
-                  <span className="text-4xl font-bold text-primary">{product.price} RON</span>
+                  <span className="text-4xl font-bold text-primary">
+                    {product.price} RON
+                  </span>
                 </div>
                 {product.stock > 0 ? (
                   <p className="text-sm text-muted-foreground mt-2">
@@ -156,7 +159,9 @@ const Product = () => {
               <div className="grid grid-cols-3 gap-4 pt-6">
                 <div className="text-center p-4 bg-muted/30 rounded-lg">
                   <p className="text-sm font-semibold">Livrare</p>
-                  <p className="text-xs text-muted-foreground mt-1">Livrare în 5-7 zile</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Livrare în 5-7 zile
+                  </p>
                 </div>
                 <div className="text-center p-4 bg-muted/30 rounded-lg">
                   <p className="text-sm font-semibold">Plată</p>
