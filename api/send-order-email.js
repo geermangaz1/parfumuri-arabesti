@@ -1,40 +1,65 @@
+// /api/send-email.js
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ message: "Method Not Allowed" });
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   const { name, email, message } = req.body;
 
-  const brevoKey = "xkeysib-....(cheia ta Brevo completă aici)";
+  if (!name || !email || !message) {
+    return res.status(400).json({ error: "Lipsesc datele necesare" });
+  }
 
   try {
+    // Trimite email la tine (orientalessence.shop@gmail.com)
     const response = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
       headers: {
         "accept": "application/json",
+        "api-key": process.env.BREVO_API_KEY,
         "content-type": "application/json",
-        "api-key": brevoKey,
       },
       body: JSON.stringify({
-        sender: { name: "Oriental Essence", email: "orientalessence.shop@gmail.com" },
-        to: [
-          { email: "orientalessence.shop@gmail.com" }, // tu primești comanda
-          { email }, // clientul primește confirmarea
-        ],
-        subject: "Confirmare comandă - Oriental Essence",
+        sender: { email: "orientalessence.shop@gmail.com", name: "Oriental Essence" },
+        to: [{ email: "orientalessence.shop@gmail.com" }],
+        subject: `Mesaj nou de la ${name}`,
         htmlContent: `
-          <h2>Mulțumim pentru comandă, ${name}!</h2>
-          <p>Comanda ta a fost primită cu succes. Vom reveni curând cu detalii despre livrare.</p>
-          <hr>
-          <p><strong>Mesajul tău:</strong></p>
-          <p>${message}</p>
+          <h2>Mesaj nou de la ${name}</h2>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Mesaj:</strong><br/>${message}</p>
         `,
       }),
     });
 
-    const data = await response.json();
-    return res.status(200).json({ message: "Email trimis cu succes!", data });
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Eroare la trimiterea emailului");
+    }
+
+    // Trimite email de confirmare clientului
+    await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "accept": "application/json",
+        "api-key": process.env.BREVO_API_KEY,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        sender: { email: "orientalessence.shop@gmail.com", name: "Oriental Essence" },
+        to: [{ email }],
+        subject: "Mulțumim pentru mesajul tău!",
+        htmlContent: `
+          <h2>Bună, ${name}!</h2>
+          <p>Îți mulțumim că ne-ai contactat. Am primit mesajul tău și îți vom răspunde în cel mai scurt timp.</p>
+          <p>Cu drag,<br/>Echipa Oriental Essence</p>
+        `,
+      }),
+    });
+
+    return res.status(200).json({ success: true });
   } catch (error) {
-    return res.status(500).json({ message: "Eroare la trimiterea emailului", error });
+    console.error("Eroare trimitere email:", error);
+    return res.status(500).json({ error: "A apărut o eroare la trimiterea emailului" });
   }
 }
