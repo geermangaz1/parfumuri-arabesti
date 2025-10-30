@@ -117,7 +117,8 @@ const Index = () => {
 
           <div className="text-center mt-12">
             <Link to="/catalog">
-              <Button size="lg" variant="outline" className="btn-bronze">
+              {/* ✅ Buton modificat (fără variant outline) */}
+              <Button size="lg" className="btn-bronze text-lg px-8 py-6">
                 Vezi Toate Produsele
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
