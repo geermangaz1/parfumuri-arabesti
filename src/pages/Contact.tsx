@@ -21,22 +21,21 @@ const Contact = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/send-email", {
+      // Aici trimitem către backend-ul nostru care folosește Sendinblue
+      const response = await fetch("/api/sendEmail", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
-      if (!response.ok) {
-        throw new Error("Eroare la trimiterea mesajului");
+      if (response.ok) {
+        toast.success("Mesaj trimis cu succes! Te vom contacta în curând.");
+        setFormData({ name: "", email: "", message: "" });
+      } else {
+        toast.error("A apărut o eroare. Te rugăm să încerci din nou.");
       }
-
-      toast.success("Mesaj trimis cu succes! Verifică-ți emailul pentru confirmare.");
-      setFormData({ name: "", email: "", message: "" });
     } catch (error) {
-      toast.error("A apărut o eroare. Te rugăm să încerci din nou.");
+      toast.error("Eroare de conexiune la server.");
     } finally {
       setLoading(false);
     }
@@ -45,7 +44,6 @@ const Contact = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-
       <section className="py-12 bg-gradient-to-br from-secondary/20 to-accent/20">
         <div className="container mx-auto px-4">
           <h1 className="text-5xl font-bold text-center mb-4">Contact</h1>
@@ -58,8 +56,6 @@ const Contact = () => {
       <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
-            
-            {/* FORMULARUL */}
             <div>
               <h2 className="text-3xl font-bold mb-6">Trimite-ne un mesaj</h2>
               <form onSubmit={handleSubmit} className="space-y-6">
@@ -115,11 +111,9 @@ const Contact = () => {
               </form>
             </div>
 
-            {/* INFO CONTACT */}
             <div className="space-y-8">
               <div>
                 <h2 className="text-3xl font-bold mb-6">Informații Contact</h2>
-
                 <div className="space-y-6">
                   <div className="flex items-start gap-4">
                     <div className="bg-primary/10 p-3 rounded-lg">
@@ -152,7 +146,7 @@ const Contact = () => {
               <div className="bg-muted/30 p-6 rounded-lg">
                 <h3 className="font-semibold text-lg mb-3">Timp de răspuns</h3>
                 <p className="text-muted-foreground">
-                  De obicei răspundem în maxim 24 de ore în zilele lucrătoare. 
+                  De obicei răspundem în maxim 24 de ore în zilele lucrătoare.
                   Pentru urgențe, te rugăm să ne contactezi telefonic.
                 </p>
               </div>
