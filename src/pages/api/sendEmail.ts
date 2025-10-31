@@ -1,6 +1,7 @@
 import SibApiV3Sdk from 'sib-api-v3-sdk';
 
 export default async function handler(req, res) {
+  console.log('Cheia API:', process.env.SENDINBLUE_API_KEY ? 'OK' : 'LIPSEȘTE');
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
