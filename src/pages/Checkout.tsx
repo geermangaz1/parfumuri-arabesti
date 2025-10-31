@@ -1,146 +1,118 @@
 import React, { useState } from "react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
+import emailjs from "@emailjs/browser";
 
-const Checkout = () => {
-  const [loading, setLoading] = useState(false);
+const Checkout = ({ cartItems }) => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    phone: "",
     address: "",
-    products: "",
+    phone: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      const response = await fetch("https://formspree.io/f/xgvplgzr", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({
-          subject: "🛍️ Nouă comandă primită!",
-          ...formData,
-        }),
-      });
-
-      if (response.ok) {
-        toast.success("✅ Comanda a fost trimisă cu succes!");
-        sendConfirmationEmail(formData.email, formData.name);
-        setFormData({ name: "", email: "", phone: "", address: "", products: "" });
-      } else {
-        toast.error("❌ Eroare la trimiterea comenzii. Încearcă din nou.");
-      }
-    } catch (error) {
-      toast.error("⚠️ Eroare de rețea. Verifică conexiunea.");
-    } finally {
-      setLoading(false);
-    }
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
-  const sendConfirmationEmail = async (email: string, name: string) => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
     try {
-      await fetch("https://formspree.io/f/xgvplgzr", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({
-          subject: "✅ Confirmarea comenzii tale",
-          message: `Bună ${name},\n\nÎți mulțumim pentru comandă! Echipa noastră o procesează și te vom contacta în curând.\n\nCu drag,\nEchipa Parfumuri Arabești`,
-          email,
-        }),
-      });
-    } catch (err) {
-      console.error("Eroare trimitere email client:", err);
+      // generăm un ID de comandă random
+      const orderNumber = Math.floor(Math.random() * 1000000);
+
+      // transformăm produsele într-un text lizibil
+      const orderDetails = cartItems
+        .map(
+          (item) =>
+            `${item.name} - Cantitate: ${item.quantity} - Preț: ${item.price} RON`
+        )
+        .join("\n");
+
+      // trimitem emailul cu EmailJS
+      await emailjs.send(
+        "service_db61zao", // Service ID
+        "template_a68nvl9", // Template ID
+        {
+          email: formData.email, // destinatarul (clientul)
+          order_id: orderNumber,
+          name: formData.name,
+          address: formData.address,
+          phone: formData.phone,
+          orders: orderDetails,
+          cost: { shipping: "0", tax: "0" },
+        },
+        "Q49xH-BsQuOIHaXEy" // Public Key
+      );
+
+      alert("✅ Comanda a fost trimisă cu succes! Vei primi un email de confirmare.");
+      setFormData({ name: "", email: "", address: "", phone: "" });
+    } catch (error) {
+      console.error("❌ Eroare la trimiterea emailului:", error);
+      alert("A apărut o eroare la trimiterea comenzii. Încearcă din nou.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
+    <div className="checkout-container max-w-lg mx-auto p-4 bg-white rounded-2xl shadow-md">
+      <h2 className="text-2xl font-bold mb-4 text-center text-gray-800">
+        Finalizează Comanda
+      </h2>
 
-      <section className="py-16 bg-gradient-to-b from-amber-50 to-white">
-        <div className="container mx-auto px-4 max-w-3xl">
-          <h1 className="text-4xl font-bold text-center mb-6 text-amber-900">Finalizează Comanda</h1>
-          <form onSubmit={handleSubmit} className="space-y-6 bg-white shadow-xl rounded-xl p-8 border border-amber-100">
-            <div>
-              <Label htmlFor="name">Nume complet</Label>
-              <Input
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
-                placeholder="Ex: Andrei Popescu"
-              />
-            </div>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input
+          type="text"
+          name="name"
+          placeholder="Nume complet"
+          required
+          value={formData.name}
+          onChange={handleChange}
+          className="w-full p-2 border rounded-md"
+        />
 
-            <div>
-              <Label htmlFor="email">Adresă de email</Label>
-              <Input
-                id="email"
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
-                placeholder="andrei@email.com"
-              />
-            </div>
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          required
+          value={formData.email}
+          onChange={handleChange}
+          className="w-full p-2 border rounded-md"
+        />
 
-            <div>
-              <Label htmlFor="phone">Telefon</Label>
-              <Input
-                id="phone"
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                required
-                placeholder="07xx xxx xxx"
-              />
-            </div>
+        <input
+          type="text"
+          name="phone"
+          placeholder="Telefon"
+          required
+          value={formData.phone}
+          onChange={handleChange}
+          className="w-full p-2 border rounded-md"
+        />
 
-            <div>
-              <Label htmlFor="address">Adresă de livrare</Label>
-              <Input
-                id="address"
-                name="address"
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                required
-                placeholder="Str. Exemplu, Nr. 10, București"
-              />
-            </div>
+        <textarea
+          name="address"
+          placeholder="Adresă de livrare"
+          required
+          value={formData.address}
+          onChange={handleChange}
+          className="w-full p-2 border rounded-md"
+        />
 
-            <div>
-              <Label htmlFor="products">Produsele comandate</Label>
-              <Input
-                id="products"
-                name="products"
-                value={formData.products}
-                onChange={(e) => setFormData({ ...formData, products: e.target.value })}
-                placeholder="Ex: 2x Oud Gold, 1x Amber Rose"
-              />
-            </div>
-
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 rounded-lg transition"
-            >
-              {loading ? "Se trimite comanda..." : "Trimite comanda"}
-            </Button>
-          </form>
-        </div>
-      </section>
-
-      <Footer />
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700"
+        >
+          {isSubmitting ? "Se trimite comanda..." : "Trimite Comanda"}
+        </button>
+      </form>
     </div>
   );
 };
