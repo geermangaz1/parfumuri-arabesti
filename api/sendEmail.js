@@ -1,47 +1,27 @@
-import { Resend } from "resend";
+import emailjs from "@emailjs/browser";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ message: "Method Not Allowed" });
-  }
-
-  const { name, email, message } = req.body;
-
-  if (!name || !email || !message) {
-    return res.status(400).json({ message: "Lipsesc câmpuri obligatorii" });
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    const { name, email, message } = req.body;
 
-    // Mail către tine
-    await resend.emails.send({
-      from: "Comenzi Parfumuri <no-reply@parfumuriarabesti.ro>",
-      to: "adresa-ta@email.com", // 🔹 înlocuiește cu adresa ta reală
-      subject: `Comandă nouă de la ${name}`,
-      html: `
-        <h2>Comandă nouă!</h2>
-        <p><strong>Nume:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Mesaj:</strong> ${message}</p>
-      `,
-    });
+    const result = await emailjs.send(
+      "service_db61zao",
+      "template_a68nvl9",
+      {
+        from_name: name,
+        from_email: email,
+        message,
+      },
+      "Q49xH-BsQuOIHaXEy"
+    );
 
-    // Mail de confirmare clientului
-    await resend.emails.send({
-      from: "Comenzi Parfumuri <no-reply@parfumuriarabesti.ro>",
-      to: email,
-      subject: "Confirmare comandă",
-      html: `
-        <h3>Bună, ${name}!</h3>
-        <p>Îți mulțumim pentru comandă! Echipa noastră o procesează acum și vei primi detalii în curând.</p>
-        <p>Cu drag,<br>Echipa Parfumuri Arăbești</p>
-      `,
-    });
-
-    return res.status(200).json({ message: "Mail trimis cu succes" });
-  } catch (error) {
-    console.error("Eroare la trimiterea mailului:", error);
-    return res.status(500).json({ message: "Eroare server", error });
+    res.status(200).json({ success: true, result });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, error: err });
   }
 }
