@@ -1,20 +1,17 @@
 import { useState } from "react";
 
 export default function Contact() {
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    message: "",
-  });
-  const [status, setStatus] = useState("");
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: any) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
-    setStatus("Se trimite...");
+    setLoading(true);
 
     try {
       const res = await fetch("/api/sendEmail", {
@@ -23,61 +20,60 @@ export default function Contact() {
         body: JSON.stringify(form),
       });
 
-      const data = await res.json();
-
       if (res.ok) {
-        setStatus("Mesaj trimis cu succes! 📨");
-        setForm({ name: "", email: "", message: "" });
+        setSent(true);
       } else {
-        setStatus(`Eroare: ${data.message || "Nu s-a putut trimite mesajul"}`);
+        alert("Eroare la trimiterea mesajului.");
       }
     } catch (error) {
-      console.error("Eroare:", error);
-      setStatus("Eroare de rețea, încearcă din nou.");
+      alert("Eroare de rețea. Încearcă din nou.");
     }
+
+    setLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gray-50">
-      <div className="w-full max-w-md bg-white p-6 rounded-2xl shadow-md">
-        <h1 className="text-2xl font-semibold text-center mb-4">Contactează-ne</h1>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <div className="max-w-lg mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-4">Contactează-ne</h1>
+
+      {sent ? (
+        <p className="text-green-600 font-semibold">
+          Mesaj trimis cu succes! Verifică emailul pentru confirmare.
+        </p>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
             name="name"
-            placeholder="Nume"
-            value={form.name}
+            placeholder="Numele tău"
             onChange={handleChange}
             required
-            className="border p-2 rounded-lg"
+            className="w-full border p-2 rounded"
           />
           <input
             type="email"
             name="email"
-            placeholder="Email"
-            value={form.email}
+            placeholder="Adresa de email"
             onChange={handleChange}
             required
-            className="border p-2 rounded-lg"
+            className="w-full border p-2 rounded"
           />
           <textarea
             name="message"
-            placeholder="Mesajul tău"
-            value={form.message}
+            placeholder="Mesajul tău sau comanda"
             onChange={handleChange}
             required
-            className="border p-2 rounded-lg min-h-[100px]"
+            className="w-full border p-2 rounded"
           />
           <button
             type="submit"
-            className="bg-black text-white py-2 rounded-lg hover:bg-gray-800 transition"
+            disabled={loading}
+            className="bg-black text-white py-2 px-4 rounded"
           >
-            Trimite mesaj
+            {loading ? "Se trimite..." : "Trimite mesajul"}
           </button>
         </form>
-
-        {status && <p className="text-center mt-4 text-sm">{status}</p>}
-      </div>
+      )}
     </div>
   );
 }
