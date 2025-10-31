@@ -1,60 +1,72 @@
-import React, { useState } from "react";
+"use client";
+import { useState } from "react";
 
-const Checkout = () => {
+export default function CheckoutPage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     address: "",
   });
-  const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
-  const [successMsg, setSuccessMsg] = useState("");
+  const [status, setStatus] = useState<null | string>(null);
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setErrorMsg("");
-    setSuccessMsg("");
+    setStatus(null);
 
     try {
-      const response = await fetch("/api/sendEmail", {
+      const res = await fetch("/api/sendEmail", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
-
-      if (data.success) {
-        setSuccessMsg("Comanda a fost trimisă cu succes! Vei primi un email de confirmare.");
+      if (res.ok) {
+        setStatus("Comanda a fost trimisă cu succes! 🎉");
         setFormData({ name: "", email: "", phone: "", address: "" });
       } else {
-        setErrorMsg("A apărut o eroare la trimiterea comenzii. Încearcă din nou.");
+        setStatus("A apărut o eroare la trimiterea comenzii. Încearcă din nou.");
       }
     } catch (err) {
       console.error(err);
-      setErrorMsg("Eroare de conexiune. Încearcă din nou.");
-    } finally {
-      setLoading(false);
+      setStatus("Eroare de rețea. Verifică conexiunea.");
     }
   };
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-[url('https://img.freepik.com/free-photo/perfume-bottle-with-leaves-dark-background_23-2148294995.jpg')]
-      bg-cover bg-center p-6"
+      style={{
+        fontFamily: "Poppins, sans-serif",
+        backgroundImage:
+          "url('https://images.unsplash.com/photo-1618354691373-d851c9b5508f?auto=format&fit=crop&w=1600&q=80')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
     >
-      <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-8 max-w-md w-full border border-[#b46b35]">
-        <h2 className="text-2xl font-bold text-center text-[#8b3a0e] mb-6">
+      <div
+        style={{
+          backgroundColor: "rgba(255,255,255,0.9)",
+          borderRadius: "20px",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+          padding: "40px",
+          width: "350px",
+          textAlign: "center",
+          backdropFilter: "blur(6px)",
+        }}
+      >
+        <h2 style={{ color: "#6b3e26", marginBottom: "20px", fontSize: "1.5em" }}>
           Finalizează Comanda
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit}>
           <input
             type="text"
             name="name"
@@ -62,9 +74,8 @@ const Checkout = () => {
             value={formData.name}
             onChange={handleChange}
             required
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#b46b35]"
+            style={inputStyle}
           />
-
           <input
             type="email"
             name="email"
@@ -72,46 +83,68 @@ const Checkout = () => {
             value={formData.email}
             onChange={handleChange}
             required
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#b46b35]"
+            style={inputStyle}
           />
-
           <input
-            type="tel"
+            type="text"
             name="phone"
-            placeholder="Număr de telefon"
+            placeholder="Telefon"
             value={formData.phone}
             onChange={handleChange}
             required
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#b46b35]"
+            style={inputStyle}
           />
-
           <textarea
             name="address"
-            placeholder="Adresă completă"
+            placeholder="Adresa completă"
             value={formData.address}
             onChange={handleChange}
             required
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#b46b35] resize-none"
+            rows={3}
+            style={{
+              ...inputStyle,
+              resize: "none",
+            }}
           />
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-[#b46b35] hover:bg-[#8b3a0e] text-white py-3 rounded-lg font-semibold transition-all duration-300 shadow-md"
-          >
-            {loading ? "Se trimite..." : "Trimite Comanda"}
+          <button type="submit" style={buttonStyle}>
+            Trimite Comanda
           </button>
         </form>
 
-        {successMsg && (
-          <p className="text-green-700 text-center mt-4 font-medium">{successMsg}</p>
-        )}
-        {errorMsg && (
-          <p className="text-red-600 text-center mt-4 font-medium">{errorMsg}</p>
+        {status && (
+          <p
+            style={{
+              marginTop: "15px",
+              color: status.includes("succes") ? "green" : "red",
+              fontSize: "0.9em",
+            }}
+          >
+            {status}
+          </p>
         )}
       </div>
     </div>
   );
-};
+}
 
-export default Checkout;
+const inputStyle = {
+  width: "100%",
+  marginBottom: "15px",
+  padding: "10px",
+  border: "1px solid #ccc",
+  borderRadius: "10px",
+  fontSize: "1em",
+  background: "#f9f9f9",
+} as React.CSSProperties;
+
+const buttonStyle = {
+  width: "100%",
+  padding: "12px",
+  background: "linear-gradient(45deg, #b48c57, #d4af37)",
+  border: "none",
+  borderRadius: "10px",
+  color: "white",
+  fontWeight: "bold",
+  cursor: "pointer",
+  transition: "0.3s ease",
+} as React.CSSProperties;
