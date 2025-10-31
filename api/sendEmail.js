@@ -6,22 +6,24 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { name, email, message } = req.body;
+    const { name, email, phone, address } = req.body;
 
+    // Trimite emailul cu EmailJS
     const result = await emailjs.send(
-      "service_db61zao",
-      "template_a68nvl9",
+      "service_db61zao", // Service ID
+      "template_a68nvl9", // Template ID
       {
-        from_name: name,
-        from_email: email,
-        message,
+        name,
+        email,
+        phone,
+        address,
       },
-      "Q49xH-BsQuOIHaXEy"
+      "Q49xH-BsQuOIHaXEy" // Public key
     );
 
     res.status(200).json({ success: true, result });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ success: false, error: err });
+    console.error("Eroare la trimitere:", err);
+    res.status(500).json({ success: false, error: err.message });
   }
 }
