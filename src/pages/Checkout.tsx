@@ -1,7 +1,4 @@
 import React, { useState } from "react";
-import emailjs from "@emailjs/browser";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 
 const Checkout = () => {
   const [formData, setFormData] = useState({
@@ -11,40 +8,37 @@ const Checkout = () => {
     address: "",
   });
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState<"success" | "error" | null>(null);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setStatus(null);
+    setErrorMsg("");
+    setSuccessMsg("");
 
     try {
-      const response = await emailjs.send(
-        "service_db61zao",
-        "template_a68nvl9",
-        {
-          to_name: formData.name,
-          from_name: "Parfumuri Arabești",
-          to_email: formData.email,
-          phone: formData.phone,
-          address: formData.address,
-        },
-        "Q49xH-BsQuOIHaXEy"
-      );
+      const response = await fetch("/api/sendEmail", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
 
-      if (response.status === 200) {
-        setStatus("success");
+      const data = await response.json();
+
+      if (data.success) {
+        setSuccessMsg("Comanda a fost trimisă cu succes! Vei primi un email de confirmare.");
         setFormData({ name: "", email: "", phone: "", address: "" });
       } else {
-        setStatus("error");
+        setErrorMsg("A apărut o eroare la trimiterea comenzii. Încearcă din nou.");
       }
-    } catch (error) {
-      console.error("Eroare EmailJS:", error);
-      setStatus("error");
+    } catch (err) {
+      console.error(err);
+      setErrorMsg("Eroare de conexiune. Încearcă din nou.");
     } finally {
       setLoading(false);
     }
@@ -52,78 +46,70 @@ const Checkout = () => {
 
   return (
     <div
-      className="min-h-screen flex justify-center items-center bg-cover bg-center p-4"
-      style={{
-        backgroundImage: `url('https://i.ibb.co/0fQXg8t/parfumuri-bg.jpg')`,
-      }}
+      className="min-h-screen flex items-center justify-center bg-[url('https://img.freepik.com/free-photo/perfume-bottle-with-leaves-dark-background_23-2148294995.jpg')]
+      bg-cover bg-center p-6"
     >
-      <Card className="max-w-md w-full shadow-2xl rounded-2xl bg-white/95 backdrop-blur-md border border-amber-200">
-        <CardContent className="p-8">
-          <h2 className="text-3xl font-bold text-center mb-6 text-amber-800 font-['Playfair_Display']">
-            Finalizează Comanda
-          </h2>
+      <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-8 max-w-md w-full border border-[#b46b35]">
+        <h2 className="text-2xl font-bold text-center text-[#8b3a0e] mb-6">
+          Finalizează Comanda
+        </h2>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <input
-              type="text"
-              name="name"
-              placeholder="Nume complet"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              className="w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-500"
-            />
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="text"
+            name="name"
+            placeholder="Nume complet"
+            value={formData.name}
+            onChange={handleChange}
+            required
+            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#b46b35]"
+          />
 
-            <input
-              type="email"
-              name="email"
-              placeholder="Adresă de email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              className="w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-500"
-            />
+          <input
+            type="email"
+            name="email"
+            placeholder="Email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#b46b35]"
+          />
 
-            <input
-              type="text"
-              name="phone"
-              placeholder="Număr de telefon"
-              value={formData.phone}
-              onChange={handleChange}
-              required
-              className="w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-500"
-            />
+          <input
+            type="tel"
+            name="phone"
+            placeholder="Număr de telefon"
+            value={formData.phone}
+            onChange={handleChange}
+            required
+            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#b46b35]"
+          />
 
-            <textarea
-              name="address"
-              placeholder="Adresă completă"
-              value={formData.address}
-              onChange={handleChange}
-              required
-              className="w-full p-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-amber-500 min-h-[100px]"
-            />
+          <textarea
+            name="address"
+            placeholder="Adresă completă"
+            value={formData.address}
+            onChange={handleChange}
+            required
+            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#b46b35] resize-none"
+          />
 
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-amber-600 hover:bg-amber-700 text-white text-lg py-3 rounded-md transition-all"
-            >
-              {loading ? "Se trimite comanda..." : "Trimite Comanda"}
-            </Button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-[#b46b35] hover:bg-[#8b3a0e] text-white py-3 rounded-lg font-semibold transition-all duration-300 shadow-md"
+          >
+            {loading ? "Se trimite..." : "Trimite Comanda"}
+          </button>
+        </form>
 
-            {status === "success" && (
-              <p className="text-green-600 text-center font-medium mt-3">
-                ✅ Comanda a fost trimisă cu succes! Vei primi un email de confirmare.
-              </p>
-            )}
-            {status === "error" && (
-              <p className="text-red-600 text-center font-medium mt-3">
-                ❌ A apărut o eroare la trimiterea comenzii. Verifică emailul și încearcă din nou.
-              </p>
-            )}
-          </form>
-        </CardContent>
-      </Card>
+        {successMsg && (
+          <p className="text-green-700 text-center mt-4 font-medium">{successMsg}</p>
+        )}
+        {errorMsg && (
+          <p className="text-red-600 text-center mt-4 font-medium">{errorMsg}</p>
+        )}
+      </div>
     </div>
   );
 };
