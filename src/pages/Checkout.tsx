@@ -1,80 +1,58 @@
-"use client";
-import { useState } from "react";
+import React, { useState } from "react";
 
-export default function CheckoutPage() {
+export default function Checkout() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     address: "",
   });
-  const [status, setStatus] = useState<null | string>(null);
+
+  const [message, setMessage] = useState("");
+  const [success, setSuccess] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setStatus(null);
 
-    try {
-      const res = await fetch("/api/sendEmail", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      if (res.ok) {
-        setStatus("Comanda a fost trimisă cu succes! 🎉");
-        setFormData({ name: "", email: "", phone: "", address: "" });
-      } else {
-        setStatus("A apărut o eroare la trimiterea comenzii. Încearcă din nou.");
-      }
-    } catch (err) {
-      console.error(err);
-      setStatus("Eroare de rețea. Verifică conexiunea.");
+    if (!formData.name || !formData.email || !formData.phone || !formData.address) {
+      setMessage("Te rugăm să completezi toate câmpurile!");
+      setSuccess(false);
+      return;
     }
+
+    // Simulare trimitere comandă
+    console.log("Comandă trimisă:", formData);
+    setMessage("Comanda ta a fost trimisă cu succes! Te vom contacta curând!");
+    setSuccess(true);
+
+    // Resetează formularul
+    setFormData({ name: "", email: "", phone: "", address: "" });
   };
 
   return (
     <div
+      className="min-h-screen flex items-center justify-center bg-cover bg-center"
       style={{
-        fontFamily: "Poppins, sans-serif",
-        backgroundImage:
-          "url('https://images.unsplash.com/photo-1618354691373-d851c9b5508f?auto=format&fit=crop&w=1600&q=80')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
+        backgroundImage: "url('https://images.unsplash.com/photo-1616400619175-5f91c0f2b87c?auto=format&fit=crop&w=1600&q=80')",
       }}
     >
-      <div
-        style={{
-          backgroundColor: "rgba(255,255,255,0.9)",
-          borderRadius: "20px",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
-          padding: "40px",
-          width: "350px",
-          textAlign: "center",
-          backdropFilter: "blur(6px)",
-        }}
-      >
-        <h2 style={{ color: "#6b3e26", marginBottom: "20px", fontSize: "1.5em" }}>
+      <div className="bg-white/90 backdrop-blur-lg shadow-xl rounded-2xl p-8 w-full max-w-md border border-[#b87333]">
+        <h2 className="text-2xl font-bold text-center text-[#b87333] mb-6">
           Finalizează Comanda
         </h2>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
             name="name"
             placeholder="Nume complet"
             value={formData.name}
             onChange={handleChange}
-            required
-            style={inputStyle}
+            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#b87333]"
           />
           <input
             type="email"
@@ -82,69 +60,42 @@ export default function CheckoutPage() {
             placeholder="Email"
             value={formData.email}
             onChange={handleChange}
-            required
-            style={inputStyle}
+            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#b87333]"
           />
           <input
-            type="text"
+            type="tel"
             name="phone"
-            placeholder="Telefon"
+            placeholder="Număr de telefon"
             value={formData.phone}
             onChange={handleChange}
-            required
-            style={inputStyle}
+            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#b87333]"
           />
           <textarea
             name="address"
-            placeholder="Adresa completă"
+            placeholder="Adresa de livrare"
             value={formData.address}
             onChange={handleChange}
-            required
-            rows={3}
-            style={{
-              ...inputStyle,
-              resize: "none",
-            }}
-          />
-          <button type="submit" style={buttonStyle}>
+            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#b87333]"
+          ></textarea>
+
+          <button
+            type="submit"
+            className="w-full bg-[#b87333] hover:bg-[#a15e24] text-white py-3 rounded-lg font-semibold transition-colors"
+          >
             Trimite Comanda
           </button>
         </form>
 
-        {status && (
+        {message && (
           <p
-            style={{
-              marginTop: "15px",
-              color: status.includes("succes") ? "green" : "red",
-              fontSize: "0.9em",
-            }}
+            className={`mt-4 text-center ${
+              success ? "text-green-600" : "text-red-600"
+            }`}
           >
-            {status}
+            {message}
           </p>
         )}
       </div>
     </div>
   );
 }
-
-const inputStyle = {
-  width: "100%",
-  marginBottom: "15px",
-  padding: "10px",
-  border: "1px solid #ccc",
-  borderRadius: "10px",
-  fontSize: "1em",
-  background: "#f9f9f9",
-} as React.CSSProperties;
-
-const buttonStyle = {
-  width: "100%",
-  padding: "12px",
-  background: "linear-gradient(45deg, #b48c57, #d4af37)",
-  border: "none",
-  borderRadius: "10px",
-  color: "white",
-  fontWeight: "bold",
-  cursor: "pointer",
-  transition: "0.3s ease",
-} as React.CSSProperties;
